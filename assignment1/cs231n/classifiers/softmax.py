@@ -32,8 +32,29 @@ def softmax_loss_naive(W, X, y, reg):
     # regularization!                                                           #
     #############################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
+    num_classes = W.shape[1]
+    num_train = X.shape[0]
+    for i in xrange(num_train):
+      scores = X[i].dot(W)
+      scores-=scores.max()
+      scores_expsum = np.sum(np.exp(scores))
+      cor_ex = np.exp(scores[y[i]])
+      q=cor_ex/scores_expsum
+      loss+=-np.log(q)
+      dW[:,y[i]]+=(-1)*(scores_expsum-cor_ex)/scores_expsum*X[i]
+      for j in xrange(num_classes):
+        if j==y[i]:
+          continue
+        dW[:, j] += np.exp(scores[j]) / scores_expsum * X[i]
 
-    pass
+    # Add regularization to the loss.
+    loss/=num_train
+    loss += reg * np.sum(W * W)
+    dW/=num_train
+    dW+=2*reg*W
+
+
+    
 
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
@@ -49,7 +70,8 @@ def softmax_loss_vectorized(W, X, y, reg):
     # Initialize the loss and gradient to zero.
     loss = 0.0
     dW = np.zeros_like(W)
-
+    num_classes = W.shape[1]
+    num_train = X.shape[0]
     #############################################################################
     # TODO: Compute the softmax loss and its gradient using no explicit loops.  #
     # Store the loss in loss and the gradient in dW. If you are not careful     #
@@ -57,9 +79,20 @@ def softmax_loss_vectorized(W, X, y, reg):
     # regularization!                                                           #
     #############################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
+    scores = X.dot(W)
+    scores -= scores.max()
+    scores = np.exp(scores)
+    scores_sums = np.sum(scores, axis=1)
+    cors = scores[range(num_train), y]
+    loss = cors / scores_sums
+    loss = -np.sum(np.log(loss))/num_train + reg * np.sum(W * W)
 
-    pass
-
+  # grad
+    s = np.divide(scores, scores_sums.reshape(num_train, 1))
+    s[range(num_train), y] = - (scores_sums - cors) / scores_sums
+    dW = X.T.dot(s)
+    dW /= num_train
+    dW += 2 * reg * W
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
     return loss, dW
