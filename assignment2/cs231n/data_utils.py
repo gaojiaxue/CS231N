@@ -4,7 +4,7 @@ from builtins import range
 from six.moves import cPickle as pickle
 import numpy as np
 import os
-from scipy.misc import imread
+from imageio import imread
 import platform
 
 def load_pickle(f):
@@ -71,7 +71,6 @@ def get_CIFAR10_data(num_training=49000, num_validation=1000, num_test=1000,
         X_test -= mean_image
 
     # Transpose so that channels come first
-    # Original is transpose(0,1,2,3)
     X_train = X_train.transpose(0, 3, 1, 2).copy()
     X_val = X_val.transpose(0, 3, 1, 2).copy()
     X_test = X_test.transpose(0, 3, 1, 2).copy()
